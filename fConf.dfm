@@ -1,10 +1,10 @@
 object frmConf: TfrmConf
-  Left = 591
-  Top = 236
+  Left = 361
+  Top = 220
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
-  Caption = 'Konfigurace'
-  ClientHeight = 347
+  Caption = 'Nastaven'#237' spo'#345'i'#269'e Hodiny'
+  ClientHeight = 402
   ClientWidth = 432
   Color = clBtnFace
   Constraints.MinHeight = 348
@@ -19,17 +19,9 @@ object frmConf: TfrmConf
   OnCreate = FormCreate
   DesignSize = (
     432
-    347)
+    402)
   PixelsPerInch = 96
   TextHeight = 13
-  object lblMultisampling: TLabel
-    Left = 16
-    Top = 245
-    Width = 53
-    Height = 13
-    Anchors = [akLeft, akBottom]
-    Caption = 'Antialiasing'
-  end
   object GroupColors: TGroupBox
     Left = 8
     Top = 8
@@ -135,82 +127,45 @@ object frmConf: TfrmConf
       OnClick = colorClick
     end
   end
-  object boxCenter: TCheckBox
-    Left = 16
-    Top = 268
-    Width = 406
-    Height = 17
-    Anchors = [akLeft, akRight, akBottom]
-    Caption = 'Udr'#382'ovat hodiny vycentrovan'#233
-    TabOrder = 1
-    OnClick = boxCenterClick
-  end
   object Panel1: TPanel
     Left = 8
-    Top = 311
+    Top = 366
     Width = 419
     Height = 3
     Anchors = [akLeft, akRight, akBottom]
     BevelInner = bvLowered
-    TabOrder = 2
+    TabOrder = 1
   end
   object btnInfo: TButton
     Left = 8
-    Top = 319
+    Top = 374
     Width = 121
     Height = 25
     Anchors = [akLeft, akBottom]
     Caption = '&Informace o aplikaci'
-    TabOrder = 3
+    TabOrder = 2
     OnClick = btnInfoClick
   end
   object btnOK: TButton
     Left = 266
-    Top = 319
+    Top = 374
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = '&Ok'
     Default = True
-    TabOrder = 4
+    TabOrder = 3
     OnClick = btnOKClick
   end
   object btnCancel: TButton
     Left = 352
-    Top = 319
+    Top = 374
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Z&ru'#353'it'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = btnCancelClick
-  end
-  object boxRandom: TCheckBox
-    Left = 16
-    Top = 290
-    Width = 398
-    Height = 17
-    Anchors = [akLeft, akRight, akBottom]
-    Caption = 'Pohybovat n'#225'hodn'#283
-    TabOrder = 6
-    OnClick = boxRandomClick
-  end
-  object boxMultisampling: TComboBox
-    Left = 80
-    Top = 243
-    Width = 65
-    Height = 21
-    Style = csDropDownList
-    Anchors = [akLeft, akBottom]
-    ItemHeight = 13
-    ItemIndex = 0
-    TabOrder = 7
-    Text = #382#225'dn'#253
-    OnChange = boxMultisamplingChange
-    Items.Strings = (
-      #382#225'dn'#253
-      '8x'
-      '16x')
   end
   object pnlScreen: TPanel
     Left = 224
@@ -220,7 +175,7 @@ object frmConf: TfrmConf
     BevelOuter = bvNone
     Color = clBlack
     ParentBackground = False
-    TabOrder = 8
+    TabOrder = 5
   end
   object grpSize: TGroupBox
     Left = 8
@@ -229,7 +184,7 @@ object frmConf: TfrmConf
     Height = 65
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Velikost'
-    TabOrder = 9
+    TabOrder = 6
     DesignSize = (
       417
       65)
@@ -268,6 +223,55 @@ object frmConf: TfrmConf
       Position = 4
       TabOrder = 0
       OnChange = edtSizeChange
+    end
+  end
+  object boxMovement: TGroupBox
+    Left = 8
+    Top = 240
+    Width = 417
+    Height = 65
+    Anchors = [akLeft, akTop, akRight]
+    Caption = 'Pohyb'
+    TabOrder = 7
+    DesignSize = (
+      417
+      65)
+    object boxCenter: TCheckBox
+      Left = 8
+      Top = 16
+      Width = 398
+      Height = 17
+      Anchors = [akLeft, akTop, akRight]
+      Caption = 'Udr'#382'ovat hodiny vycentrovan'#233
+      TabOrder = 0
+      OnClick = boxCenterClick
+    end
+    object boxRandom: TCheckBox
+      Left = 8
+      Top = 40
+      Width = 398
+      Height = 17
+      Anchors = [akLeft, akTop, akRight]
+      Caption = 'Pohybovat n'#225'hodn'#283
+      TabOrder = 1
+      OnClick = boxRandomClick
+    end
+  end
+  object boxDrawing: TGroupBox
+    Left = 8
+    Top = 312
+    Width = 417
+    Height = 49
+    Caption = 'Vykreslov'#225'n'#237
+    TabOrder = 8
+    object btnAntialiasing: TCheckBox
+      Left = 8
+      Top = 24
+      Width = 97
+      Height = 17
+      Caption = 'Antialiasing'
+      TabOrder = 0
+      OnClick = btnAntialiasingClick
     end
   end
   object dlgColor: TColorDialog

@@ -11,8 +11,7 @@ uses
   uClock in 'uClock.pas' {frmClock},
   fConf in 'fConf.pas' {frmConf},
   fAbout in 'fAbout.pas' {AboutBox},
-  jbClock in 'jbClock.pas',
-  uMultisampling in 'uMultisampling.pas';
+  jbClock in 'jbClock.pas';
 
 type
   TSSMode = (ssSetPwd, ssPreview, ssConfig, ssRun);
@@ -109,7 +108,7 @@ begin
   Clock.Parent := nil;
   Clock.ParentWindow := DemoWnd;
   Clock.Oclock := time;
-  Clock.MultisamplingType := x16;
+  Clock.Antialiasing := True;
   Mover := TJBMover.Create(Clock);
   Clock.OnTick := Mover.MoveWithMe;
   Clock.height := ScrHeight;

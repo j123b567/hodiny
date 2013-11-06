@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, jbClock, uMultisampling;
+  Dialogs, ExtCtrls, StdCtrls, jbClock;
 
 type
 
@@ -48,7 +48,7 @@ begin
   fClock.Parent := AOwner;
   fClock.Left := 136;
   fClock.Top := 56;
-  fClock.MultisamplingType := x16;
+  fClock.Antialiasing := True;
   fClock.Go := True;
 
   fMover := TJBMover.Create(fClock);

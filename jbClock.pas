@@ -4,7 +4,7 @@ interface
 
 uses
   SysUtils, Classes, Controls, ExtCtrls, Graphics, Messages, Math,
-  uMultisampling;
+  ezLines;
 
 type
   TJBLine = class(TPen)
@@ -83,15 +83,20 @@ type
     fHands: TBitmap;
     fDrawing: TBitmap;
 
-    fMultisampling: TJBMultisamplingType;
+    fEZLine: TEZLine;
+
+    fAntialiasing: boolean;
 
     FOnTick: TNotifyEvent;
     procedure Paint; override;
     procedure PaintBackground;
     procedure PaintTime;
     procedure LineChanged(Sender: TObject);
-    procedure SetMultisampling(value: TJBMultisamplingType);
+    procedure SetAntialiasing(value: boolean);
     procedure DoTick;
+    procedure DrawAALine(ATarget: TBitmap; AWidth: double; x1, y1, x2, y2 :integer);
+    procedure DrawAAElipse(ATarget: TBitmap; x1, y1, x2, y2 :integer);
+
   public
     { Public declarations }
     constructor Create(AOwner: TComponent); override;
@@ -111,7 +116,7 @@ type
 
     property OnTick: TNotifyEvent read fOnTick write fOnTick;
 
-    property MultisamplingType: TJBMultisamplingType read fMultisampling write setMultisampling;
+    property Antialiasing:boolean read fAntialiasing write setAntialiasing;
 
     property Hint;
     property ParentShowHint;
@@ -130,9 +135,6 @@ type
   end;
 
 implementation
-
-const
-  SIZE_FACTOR: array[TJBMultisamplingType] of byte = (1, 2, 4);
 
 constructor TJBMover.Create(ctrl: TControl);
 begin
@@ -279,6 +281,15 @@ begin
   fHands := TBitmap.Create;
   fHands.PixelFormat := pf24bit;
 
+  fEZLine := TEZLine.Create;
+  fEZLine.AntiAlias := true;
+  fEZLine.PenStyle := psSolid;
+  fEZLine.PenMode := pmCopy;
+  fEZLine.PenTransparency := 1.0;
+  fEZLine.StartDistance := 0;
+  fEZLine.UseCutoff := true;
+
+
   fHour := TJBLine.Create;
   fMinute := TJBLine.Create;
   fSecond := TJBLine.Create;
@@ -327,6 +338,7 @@ begin
   fFace.Free;
   fHands.Free;
   fDrawing.Free;
+  fEZLine.Free;
   fHour.Free;
   fMinute.Free;
   fSecond.Free;
@@ -409,20 +421,46 @@ begin
   Invalidate;
 end;
 
-procedure TJBClock.SetMultisampling(value: TJBMultisamplingType);
+procedure TJBClock.SetAntialiasing(value: boolean);
 begin
-  if value <> fMultisampling then
+  if value <> fAntialiasing then
     begin
-      fMultisampling := value;
+      fAntialiasing := value;
+      fEZLine.AntiAlias := value;
       Invalidate;
     end;
+end;
+
+procedure TJBClock.DrawAALine(ATarget: TBitmap; AWidth: double; x1, y1, x2, y2 :integer);
+begin
+  fEZLine.LineColor := ATarget.Canvas.Pen.Color;
+  fEZLine.LineWidth := AWidth;
+
+  fEZLine.Line(x1, y1, x2, y2, ATarget);
+end;
+
+procedure TJBClock.DrawAAElipse(ATarget: TBitmap; x1, y1, x2, y2 :integer);
+var
+  a1, b1, a2, b2: integer;
+begin
+  fEZLine.LineColor := ATarget.Canvas.Pen.Color;
+  fEZLine.LineWidth := ATarget.Canvas.Pen.Width;
+
+  a1 := (x1 + x2) div 2;
+  b1 := (y1 + y2) div 2;
+  a2 := x2;
+  b2 := y2;
+
+  fEZLine.Ellips(a1, b1, a2, b2, ATarget);
 end;
 
 procedure TJBClock.PaintBackground;
 var
   radius: integer;
   xrel, yrel: real;
-  x, y: integer;
+  x1, y1: integer;
+  x2, y2: integer;
+  lineWidth: real;
 
   procedure drawTicks(aPen: TJBLine; module: integer);
   var
@@ -437,13 +475,13 @@ var
         xrel := Cos(i / module * Pi * 2);
         yrel := Sin(i / module * Pi * 2);
 
-        x := round(xrel * (radius - aPen.Length * fDrawing.Width div 1000) + radius);
-        y := round(yrel * (radius - aPen.Length * fDrawing.Width div 1000) + radius);
-        fDrawing.Canvas.MoveTo(x, y);
+        x1 := round(xrel * (radius - aPen.Length * fDrawing.Width div 1000) + radius);
+        y1 := round(yrel * (radius - aPen.Length * fDrawing.Width div 1000) + radius);
 
-        x := round((xrel + 1) * radius);
-        y := round((yrel + 1) * radius);
-        fDrawing.Canvas.LineTo(x, y);
+        x2 := round((xrel + 1) * radius);
+        y2 := round((yrel + 1) * radius);
+
+        DrawAALine(fDrawing, width * fDrawing.Width / 1000, x1, y1, x2, y2);
 
       end;
     fDrawing.Canvas.Pen.Width := width;
@@ -453,8 +491,8 @@ begin
   fFace.Height := Max(Height, Width);
   fFace.Width := Max(Height, Width);
 
-  fDrawing.Height := fFace.Height * SIZE_FACTOR[fMultisampling];
-  fDrawing.Width := fFace.Width * SIZE_FACTOR[fMultisampling];
+  fDrawing.Height := fFace.Height;
+  fDrawing.Width := fFace.Width;
 
   fDrawing.Canvas.Brush.Color := fColor;
   fDrawing.Canvas.Pen.Color := fColor;
@@ -465,17 +503,17 @@ begin
   drawTicks(fHoPo, 12);
   drawTicks(fMiPo, 60);
 
-  x := fDrawing.Width * 8 div 1000;
+  x1 := fDrawing.Width * 8 div 500  + fDrawing.Canvas.Pen.Width div 2;
   fDrawing.Canvas.Pen.Color := Color;
-  fDrawing.Canvas.Pen.Width := fDrawing.Width * 13 div 1000;
+  fDrawing.Canvas.Pen.Width := fDrawing.Width * 13 div 500;
   fDrawing.Canvas.Brush.Style := bsClear;
-  fDrawing.Canvas.Ellipse(-x, -x, fDrawing.Width + x, fDrawing.Height + x);
-  fDrawing.Canvas.Ellipse(x + fHoPo.Length * fDrawing.Width div 1000,
-    x + fHoPo.Length * fDrawing.Width div 1000,
-    fDrawing.Width - x - fHoPo.Length * fDrawing.Width div 1000,
-    fDrawing.Height - x - fHoPo.Length * fDrawing.Width div 1000);
+  DrawAAElipse(fDrawing, -x1, -x1, fDrawing.Width + x1, fDrawing.Height + x1);
+  DrawAAElipse(fDrawing, x1 + fHoPo.Length * fDrawing.Width div 1000,
+    x1 + fHoPo.Length * fDrawing.Width div 1000,
+    fDrawing.Width - x1 - fHoPo.Length * fDrawing.Width div 1000,
+    fDrawing.Height - x1 - fHoPo.Length * fDrawing.Width div 1000);
 
-  Multisampling(fDrawing, fFace, fMultisampling);
+  fFace.Assign(fDrawing);
 end;
 
 procedure TJBClock.Paint;
@@ -519,11 +557,11 @@ var
     x := round(xrel * aPen.Length * radius / 100 + radius);
     y := round(yrel * aPen.Length * radius / 100 + radius);
 
-    fDrawing.Canvas.MoveTo(radius, radius);
-    fDrawing.Canvas.LineTo(x, y);
+    DrawAALine(fDrawing, lwidth * fDrawing.Width / 1000, radius, radius, x, y);
 
+    fDrawing.Canvas.Pen.Width := fDrawing.Width * lwidth div 500;
     middlew := middle * fDrawing.Width div 1000;
-    fDrawing.Canvas.Ellipse(radius + middlew, radius + middlew, radius - middlew, radius - middlew);
+    DrawAAElipse(fDrawing, radius + middlew, radius + middlew, radius - middlew, radius - middlew);
 
     fDrawing.Canvas.Pen.Width := lwidth;
   end;
@@ -534,8 +572,8 @@ begin
   fHands.Height := fFace.Height;
   fHands.Width := fFace.Width;
 
-  fDrawing.Height := fFace.Height * SIZE_FACTOR[fMultisampling];
-  fDrawing.Width := fFace.Width * SIZE_FACTOR[fMultisampling];
+  fDrawing.Height := fFace.Height;
+  fDrawing.Width := fFace.Width;
 
   fDrawing.Canvas.Brush.Color := fColor;
   fDrawing.Canvas.Pen.Color := fColor;
@@ -545,8 +583,7 @@ begin
   DrawLine(fMinute, M + S / 60, 60, 18);
   DrawLine(fSecond, S, 60, 15);
 
-  Multisampling(fDrawing, fHands, fMultisampling);
-
+  fHands.Assign(fDrawing);
   fDrawing.Assign(fFace);
   fHands.Transparent := true;
   fHands.TransparentColor := fColor;

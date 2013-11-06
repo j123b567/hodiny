@@ -100,7 +100,7 @@ Conditionals=
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=/p 123
+RunParams=
 HostApplication=
 Launcher=
 UseLauncher=0
@@ -111,7 +111,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=3
 Release=1
-Build=5
+Build=7
 Debug=0
 PreRelease=0
 Special=0
@@ -122,7 +122,7 @@ CodePage=1250
 [Version Info Keys]
 CompanyName=JayBee
 FileDescription=Hodiny
-FileVersion=1.3.1.5
+FileVersion=1.3.1.7
 InternalName=kclock.kss
 LegalCopyright=
 LegalTrademarks=

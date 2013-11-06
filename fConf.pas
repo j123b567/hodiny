@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, ComCtrls, XPMan, jbClock, uMultisampling;
+  Dialogs, StdCtrls, ExtCtrls, ComCtrls, XPMan, jbClock;
 
 const
   configIniFile: string = 'jbClock.ini';
@@ -17,7 +17,6 @@ type
     lblColorSecond: TLabel;
     lblColorTicks: TLabel;
     lblColorBackground: TLabel;
-    boxCenter: TCheckBox;
     Panel1: TPanel;
     btnInfo: TButton;
     btnOK: TButton;
@@ -27,9 +26,6 @@ type
     colorSecond: TPanel;
     colorTicks: TPanel;
     colorBackground: TPanel;
-    boxRandom: TCheckBox;
-    lblMultisampling: TLabel;
-    boxMultisampling: TComboBox;
     dlgColor: TColorDialog;
     XPManifest1: TXPManifest;
     pnlScreen: TPanel;
@@ -38,6 +34,11 @@ type
     lblSmall: TLabel;
     lblMiddle: TLabel;
     lblLarge: TLabel;
+    boxMovement: TGroupBox;
+    boxCenter: TCheckBox;
+    boxRandom: TCheckBox;
+    boxDrawing: TGroupBox;
+    btnAntialiasing: TCheckBox;
     procedure btnOKClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
@@ -45,8 +46,8 @@ type
     procedure edtSizeChange(Sender: TObject);
     procedure boxCenterClick(Sender: TObject);
     procedure colorClick(Sender: TObject);
-    procedure boxMultisamplingChange(Sender: TObject);
     procedure boxRandomClick(Sender: TObject);
+    procedure btnAntialiasingClick(Sender: TObject);
   private
     fMover: TJBMover;
     fClock: TJBClock;
@@ -89,7 +90,7 @@ begin
       Height := 105;
       Go := True;
       Oclock := Time;
-      MultisamplingType := x16;
+      Antialiasing := True;
   end;
 end;
 
@@ -121,7 +122,7 @@ begin
   colorBackground.Color := fClock.Color;
   pnlScreen.Color := fClock.Color;
 
-  boxMultisampling.ItemIndex := ord(fClock.MultisamplingType);
+  btnAntialiasing.checked := fClock.Antialiasing;
 end;
 
 procedure TfrmConf.btnInfoClick(Sender: TObject);
@@ -129,7 +130,6 @@ begin
   AboutBox := TAboutBox.create(self);
   AboutBox.ShowModal;
   AboutBox.Free;
-//  ShowMessage('Klon kclock.kss '#13#10'Opsal Jay Bee'#13#10'http://jaybee.frih.net');
 end;
 
 procedure TfrmConf.edtSizeChange(Sender: TObject);
@@ -150,7 +150,7 @@ begin
   aClock.HoPo.Color := inif.ReadInteger(section, 'HoPoColor', clWhite);
   aClock.MiPo.Color := inif.ReadInteger(section, 'MiPoColor', clWhite);
   aClock.Color := inif.ReadInteger(section, 'BgColor', clBlack);
-  aClock.MultisamplingType := TJBMultisamplingType(inif.ReadInteger(section, 'Antialiasing', ord(x16)));
+  aClock.Antialiasing := inif.ReadBool(section, 'Antialiasing', True);
   aMover.Size := inif.ReadInteger(section, 'Size', 4);
   aMover.Move := inif.ReadBool(section, 'Move', true);
   aMover.RandomMove := inif.ReadBool(section, 'RandomMove', false);
@@ -170,7 +170,7 @@ begin
   inif.WriteInteger(section, 'HoPoColor', aClock.HoPo.Color);
   inif.WriteInteger(section, 'MiPoColor', aClock.MiPo.Color);
   inif.WriteInteger(section, 'BgColor', aClock.Color);
-  inif.WriteInteger(section, 'Antialiasing', ord(aClock.MultisamplingType));
+  inif.WriteBool(section, 'Antialiasing', aClock.Antialiasing);
   inif.WriteInteger(section, 'Size', aMover.Size);
   inif.WriteBool(section, 'Move', aMover.Move);
   inif.WriteBool(section, 'RandomMove', aMover.RandomMove);
@@ -218,18 +218,14 @@ begin
     end;
 end;
 
-procedure TfrmConf.boxMultisamplingChange(Sender: TObject);
-begin
-  case boxMultisampling.ItemIndex of
-    0: fClock.MultisamplingType := x00;
-    1: fClock.MultisamplingType := x08;
-    2: fClock.MultisamplingType := x16;
-  end;
-end;
-
 procedure TfrmConf.boxRandomClick(Sender: TObject);
 begin
   fMover.RandomMove := (Sender as TCheckBox).Checked;
+end;
+
+procedure TfrmConf.btnAntialiasingClick(Sender: TObject);
+begin
+  fClock.Antialiasing := (Sender as TCheckBox).Checked;
 end;
 
 end.
